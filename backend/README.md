@@ -3,7 +3,7 @@ Implements an API class
 
 ### Methods:
 1. `.connect(engine_type='NTVNB', engine_path=None, optional={})` - initializes an engine for API
-   * `engine_type: str` - type of engine to initialize if an existing engine not specified
+   * `engine_type: str` - type of engine to initialize if an existing engine not specified. So far only `NTVNB` engine available
    * `engine_path: str` - a path to an existing engine
    * `optional: dict` - additional parameters for engines to initialize ('corpora' with a list of document paths for a NTVNB tokenizer to train)
 
