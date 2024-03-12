@@ -75,21 +75,21 @@ class API:
 if __name__=='__main__':
 	api = API()
 
-	# Initialize the engine anew
-	api.connect(engine_type='NTVNB', optional={'corpora': ['./data/raw.csv']})
+	# Initialize the engine anew; train the tokenizer on a file labled.csv
+	api.connect(engine_type='NTVNB', optional={'corpora': ['../data/labeled.csv']})
 
 	# Train the engine
-	api.train('./data/labled.csv')
+	api.train('../data/labeled.csv')
+	print(api.query('Hello world kvartira'))
 
 	# Dump the engine into a given file
-	api.dump_engine('./engine_dumps/NTVNB.pkl')
+	api.dump_engine('../engine_dumps/NTVNB.pkl')
 
 	# Dataset manipulation
-	print(api.dataset_stats('./data/labled.csv'))
-	print(api.query('Hello world kvartira'))
-	api.dataset_update([['hello', 0]], './data/labled.csv')
-	print(api.dataset_stats('./data/labled.csv'))
+	print(api.dataset_stats('../data/labeled.csv'))
+	api.dataset_update([['hello', 0]], '../data/labeled.csv')
+	print(api.dataset_stats('../data/labeled.csv'))
 
 	# Load the engine from a file
-	api.connect(engine_path='./engine_dumps/NTVNB.pkl')
+	api.connect(engine_path='../engine_dumps/NTVNB.pkl')
 	print(api.query('Hello world kvartira'))
