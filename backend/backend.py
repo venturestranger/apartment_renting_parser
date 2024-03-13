@@ -1,7 +1,7 @@
-from config import Config
+from .config import Config
 import pandas as pd
 import pickle
-from engines import NTVNB
+from .engines import NTVNB
 
 # Implements an API interface
 class API:
