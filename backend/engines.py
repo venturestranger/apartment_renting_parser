@@ -4,8 +4,10 @@ from tokenizers.pre_tokenizers import WhitespaceSplit
 from tokenizers.trainers import BpeTrainer
 from sklearn.naive_bayes import MultinomialNB
 from unidecode import unidecode
+from .utils import AhoCorasick
 import numpy as np
 import pandas as pd
+
 
 # Key words classifier
 class KWC:
@@ -13,17 +15,19 @@ class KWC:
 		self.engine_name = 'KWC'
 		self.subs = config.SUBS
 		self.threshold = config.THRESHOLD
-	
+		self.matcher = AhoCorasick()
+
+		for sub in self.subs:
+			self.matcher.add_pattern(sub)
+		self.matcher.create_fail_links()
+
 	def predict(self, content):
-		ret = np.zeros(len(content), dtype=np.float64)
+		ret = np.zeros(len(content))
+
 		for i in range(len(content)):
-			cnt = 0
-			for word in self.subs:
-				if content[i].find(word) != -1:
-					cnt += 1
-			if cnt >= self.threshold:
-				ret[i] = 1
+			ret[i] = 1 if self.matcher.match_count(content[i]) >= self.threshold else 0
 		return ret
+
 
 # Normalizer + tokenizer + vectorizer + naive bayes
 class NTVNB:
