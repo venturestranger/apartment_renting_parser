@@ -1,7 +1,14 @@
-from .config import Config
 import pandas as pd
 import pickle
-from .engines import NTVNB
+
+if __name__=='__main__':
+	from config import Config
+	from engines import NTVNB
+	from engines import KWC
+else:
+	from .config import Config
+	from .engines import NTVNB
+	from .engines import KWC
 
 # Implements an API interface
 class API:
@@ -9,24 +16,32 @@ class API:
 		pass
 
 	# Initializes a new engine (predicting model) or loads one from <engine_dir>
-	def connect(self, engine_type='NTVNB', engine_path=None, optional={}):
+	def connect(self, engine_type='NTVNB', engine_types=[], engine_path=None, optional={}):
 		if engine_path != None:
 			try:
 				with open(engine_path, 'rb') as f:
-					self.engine = pickle.load(f)
+					self.engines = pickle.load(f)
 			except:
 				raise Exception('Error while loading the engine')
 		else:
-			if engine_type == 'NTVNB':
-				self.engine = NTVNB(Config.engine_configs[engine_type], optional['corpora'])
-			else:
-				raise Exception('No such engine exists')
+			self.engines = []
+			if len(engine_types) == 0:
+				engine_types = [engine_type]
+
+			for engine in engine_types:
+				match engine:
+					case 'NTVNB':
+						self.engines.append(NTVNB(Config.engine_configs[engine], optional['corpora']))
+					case 'KWC':
+						self.engines.append(KWC(Config.engine_configs[engine]))
+					case e:
+						raise Exception(f'{e} engine cannot be initialized')
 	
 	# Dumps the used engine
 	def dump_engine(self, engine_path=None):
 		try:
 			with open(engine_path, 'wb') as f:
-				pickle.dump(self.engine, f)
+				pickle.dump(self.engines, f)
 		except:
 			raise Exception('Create an engine first')
 	
@@ -54,7 +69,7 @@ class API:
 			new = pd.DataFrame(data_points, columns=['x', 'y'])
 			df = pd.concat([df, new])
 		except:
-			raise Exception('Rows in the provided data should have only two values for "x" and "y" columns')
+			raise Exception('Data points should have only "x" and "y" columns')
 		else:
 			df.to_csv(dataset_path)
 
@@ -62,14 +77,26 @@ class API:
 	def train(self, dataset_path):
 		df = pd.read_csv(dataset_path)
 
-		try:
-			self.engine.fit(df['x'], df['y'])
-		except:
+		if 'x' in df.columns and 'y' in df.columns:
+			for engine in self.engines:
+				try:
+					engine.fit(df['x'], df['y'])
+				except:
+					print(f'{engine.engine_name} not trainable')
+		else:
 			raise Exception('Referenced dataset should contain "x" and "y" columns')
 	
 	# Gives a prediction
-	def query(self, data):
-		return True if self.engine.predict([data])[0] > 0.5 else False
+	def query(self, data, return_ensembled=False):
+		ret = []
+		for engine in self.engines:
+			ret.append(True if engine.predict([data])[0] > 0.5 else False)
+
+		if return_ensembled == True:
+			return ret
+		else:
+			# checks if True predictors are more than False ones
+			return True if sum(ret) > len(ret) - sum(ret) else False
 
 
 if __name__=='__main__':

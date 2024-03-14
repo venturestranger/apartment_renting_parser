@@ -7,6 +7,24 @@ from unidecode import unidecode
 import numpy as np
 import pandas as pd
 
+# Key words classifier
+class KWC:
+	def __init__(self, config):
+		self.engine_name = 'KWC'
+		self.subs = config.SUBS
+		self.threshold = config.THRESHOLD
+	
+	def predict(self, content):
+		ret = np.zeros(len(content), dtype=np.float64)
+		for i in range(len(content)):
+			cnt = 0
+			for word in self.subs:
+				if content[i].find(word) != -1:
+					cnt += 1
+			if cnt >= self.threshold:
+				ret[i] = 1
+		return ret
+
 # Normalizer + tokenizer + vectorizer + naive bayes
 class NTVNB:
 	def __init__(self, config, corpora):
@@ -43,4 +61,3 @@ class NTVNB:
 	# Gives an estimation for a content provided
 	def predict(self, content):
 		return self.model.predict(self.__vectorize(content))
-
