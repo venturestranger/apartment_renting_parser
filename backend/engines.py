@@ -13,19 +13,25 @@ import pandas as pd
 class KWC:
 	def __init__(self, config):
 		self.engine_name = 'KWC'
+		self.adds = config.ADDS
 		self.subs = config.SUBS
 		self.threshold = config.THRESHOLD
-		self.matcher = AhoCorasick()
+		self.positive_matcher = AhoCorasick()
+		self.negative_matcher = AhoCorasick()
 
 		for sub in self.subs:
-			self.matcher.add_pattern(sub)
-		self.matcher.create_fail_links()
+			self.negative_matcher.add_pattern(sub)
+		self.negative_matcher.create_fail_links()
+
+		for add in self.adds:
+			self.positive_matcher.add_pattern(add)
+		self.positive_matcher.create_fail_links()
 
 	def predict(self, content):
 		ret = np.zeros(len(content))
 
 		for i in range(len(content)):
-			ret[i] = 1 if self.matcher.match_count(content[i]) >= self.threshold else 0
+			ret[i] = 1 if self.positive_matcher.match_count(content[i].lower()) - self.negative_matcher.match_count(content[i].lower()) >= self.threshold else 0
 		return ret
 
 
