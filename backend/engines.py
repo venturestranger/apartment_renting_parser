@@ -3,8 +3,11 @@ from tokenizers.models import BPE
 from tokenizers.pre_tokenizers import WhitespaceSplit
 from tokenizers.trainers import BpeTrainer
 from sklearn.naive_bayes import MultinomialNB
+# from keras.models import Sequential
+# from keras.layers import LSTM, Dense, Input
 from unidecode import unidecode
 from .utils import AhoCorasick
+from .utils import latinizeCorpora
 import numpy as np
 import pandas as pd
 
@@ -44,6 +47,10 @@ class NTVNB:
 		self.vocab_size = config.VOCAB_SIZE
 		trainer = BpeTrainer(special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"], vocab_size=config.VOCAB_SIZE, max_token_length=config.MAX_TOKEN_LENGTH, initial_alphabet=[i for i in alphabet], limit_alphabet=len(alphabet))
 		self.tokenizer.pre_tokenizer = WhitespaceSplit()
+		
+		if config.LATINIZE_CORPORA == True:
+			corpora = latinizeCorpora(corpora)
+			
 		self.tokenizer.train(corpora, trainer)
 		self.model = MultinomialNB()
 	
@@ -58,15 +65,19 @@ class NTVNB:
 	def __vectorize(self, data):
 		ret = []
 		for i in data:
-			ret.append(self.__count(self.tokenizer.encode(unidecode(i)).ids))
+			ret.append(self.__count(self.tokenizer.encode(unidecode(i.lower())).ids))
 		return ret
 	
 	# Fits the model on the given data and targets
 	def fit(self, data, target):
 		dat = []
 		for i in data:
-			dat.append(unidecode(i))
-		self.model.fit(self.__vectorize(data), target)
+			dat.append(unidecode(i.lower()))
+		self.model.fit(self.__vectorize(dat), target)
+	
+	# Tokenizes a message
+	def tokenize(self, content):
+		return self.tokenizer.encode(unidecode(content.lower())).ids
 	
 	# Gives an estimation for a content provided
 	def predict(self, content):

@@ -1,3 +1,7 @@
+import pandas as pd
+from unidecode import unidecode
+
+
 class TrieNode:
 	def __init__(self):
 		self.children = {}
@@ -45,6 +49,23 @@ class AhoCorasick:
 			node = node.children[char]
 			count += len(node.output)
 		return count
+
+
+def latinizeCorpora(corpora, in_lower=True):
+	# Translate mixed corpora to latin corpora
+	latin = []
+	for corpus in corpora:
+		try: 
+			open(corpus + '_lat', 'r')
+		except:
+			df = pd.read_csv(corpus)
+			ser = pd.Series(df['0'])
+			ser = ser.apply(lambda x: unidecode(x.lower()) if in_lower == True else unidecode)
+			ser.to_csv(corpus + '_lat', index=False)
+		finally:
+			latin.append(corpus + '_lat')
+	
+	return latin
 
 
 if __name__=="__main__":

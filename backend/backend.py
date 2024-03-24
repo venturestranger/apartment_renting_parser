@@ -1,14 +1,8 @@
 import pandas as pd
 import pickle
-
-if __name__=='__main__':
-	from config import Config
-	from engines import NTVNB
-	from engines import KWC
-else:
-	from .config import Config
-	from .engines import NTVNB
-	from .engines import KWC
+from .config import Config
+from .engines import NTVNB
+from .engines import KWC
 
 
 # Implements an API interface
@@ -98,26 +92,3 @@ class API:
 		else:
 			# checks if True predictors are more than False ones
 			return True if sum(ret) > len(ret) - sum(ret) else False
-
-
-if __name__=='__main__':
-	api = API()
-
-	# Initialize the engine anew; train the tokenizer on a file labled.csv
-	api.connect(engine_type='NTVNB', optional={'corpora': ['../data/labeled.csv']})
-
-	# Train the engine
-	api.train('../data/labeled.csv')
-	print(api.query('Hello world kvartira'))
-
-	# Dump the engine into a given file
-	api.dump_engine('../engine_dumps/NTVNB.pkl')
-
-	# Dataset manipulation
-	print(api.dataset_stats('../data/labeled.csv'))
-	api.dataset_update([['hello', 0]], '../data/labeled.csv')
-	print(api.dataset_stats('../data/labeled.csv'))
-
-	# Load the engine from a file
-	api.connect(engine_path='../engine_dumps/NTVNB.pkl')
-	print(api.query('Hello world kvartira'))
