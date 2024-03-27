@@ -1,8 +1,10 @@
 import pandas as pd
 import pickle
 from .config import Config
+from .engines import NTVRF
 from .engines import NTVNB
 from .engines import KWC
+from sklearn.model_selection import train_test_split
 
 
 # Implements an API interface
@@ -11,7 +13,7 @@ class API:
 		pass
 
 	# Initializes a new engine (predicting model) or loads one from <engine_dir>
-	def connect(self, engine_type='NTVNB', engine_types=[], engine_path=None, optional={}):
+	def connect(self, engine_type='NTVRF', engine_types=[], engine_path=None, optional={}):
 		if engine_path != None:
 			try:
 				with open(engine_path, 'rb') as f:
@@ -25,6 +27,8 @@ class API:
 
 			for engine in engine_types:
 				match engine:
+					case 'NTVRF':
+						self.engines.append(NTVRF(Config.engine_configs[engine], optional['corpora']))
 					case 'NTVNB':
 						self.engines.append(NTVNB(Config.engine_configs[engine], optional['corpora']))
 					case 'KWC':
@@ -69,13 +73,14 @@ class API:
 			df.to_csv(dataset_path)
 
 	# Retrains the engine on a given dataset
-	def train(self, dataset_path):
+	def train(self, dataset_path, portion=1.):
 		df = pd.read_csv(dataset_path)
 
 		if 'x' in df.columns and 'y' in df.columns:
 			for engine in self.engines:
 				try:
-					engine.fit(df['x'], df['y'])
+					x, x_, y, y_ = train_test_split(df['x'], df['y'], test_size=1.-portion, stratify=df['y'])
+					engine.fit(x, y)
 				except:
 					print(f'{engine.engine_name} not trainable')
 		else:
