@@ -1,4 +1,4 @@
-# API Backend
+# API Backend (venturestranger)
 
 ## Introduction
 This backend implements an API class that provides functionality for initializing, dumping, and training engines, as well as processing data for predictions.
@@ -27,7 +27,7 @@ api.connect(engine_type='KWC'})
 ```
 
 ```python
-api.connect(engine_types=['NTVNB', 'KWC'], optional={'corpora': ['./data/raw.csv']})
+api.connect(engine_types=['NTVNB', 'KWC', 'NTVRF'], optional={'corpora': ['./data/raw.csv']})
 ```
 
 ```python
@@ -60,9 +60,10 @@ print(stats['pos'], stats['neg'])
 api.dataset_update([['Сдам квартиру', 0], ['Арендую квартиру', 1]], './data/labeled.csv')
 ```
 
-5. **`.train(dataset_path)`**
+5. **`.train(dataset_path, portion=1.)`**
    - Fits an API engine on a dataset.
    - `dataset_path: str` - Path to a dataset to train the engine on.
+   - `portion` - Indicates a fraction of the specified dataset to train the engine on.
 
 ```python
 api.train('./data/labeled.csv')
@@ -81,8 +82,10 @@ prediction = api.query('Сниму квартиру в марте')
 1. **KWC (Non-trainable)** - Key Words Classifier
    - Calculates the number of positively-key words found in the text and subtracts the number of negatively-key words. The prediction is true if the difference is more than the set threshold. The engine uses the Aho-Corasick algorithm to quickly check matchings.
 
-2. **NTVNB (Trainable)** - Naive Bayes Classifier with Text Normalization, Tokenization, and Bagging
+2. **NTVNB (Trainable)** - Naive Bayes Classifier with Text Normalization, Tokenization, and Words Bagging
    - Normalizes the text, tokenizes it, and returns the bag of words. The bag of words is then classified by a Naive Bayes classifier.
    - Requires `optional` argument when connecting. `opitonal` argument should contain `corpora` key with a path to corpora to train tokenizer.
 
----
+3. **NTVRF (Trainable)** - Random Forest Classifier with Text Normalization, Tokenization, and Words Bagging
+   - Normalizes the text, tokenizes it, and returns the bag of words. The bag of words is then classified by a Random Forest classifier.
+   - Requires `optional` argument when connecting. `opitonal` argument should contain `corpora` key with a path to corpora to train tokenizer.
