@@ -3,6 +3,7 @@ from telethon.tl.functions.messages import GetHistoryRequest
 from config import Config
 from time import sleep
 from datetime import datetime 
+from backend.backend import API
 import asyncio
 import sqlite3
 import sys
@@ -13,6 +14,8 @@ api_hash = Config.API_HASH
 limit_per_request = Config.LIMIT_MESSAGES
 timeout = Config.TIMEOUT
 db_path = Config.DATABASE_PATH
+api = API()
+api.connect(engine_path='./engine_dumps/KWC_NTVRF_0.7.pkl')
 
 
 async def get_channel_messages(channel_username, limit):
@@ -36,9 +39,10 @@ async def get_channel_messages(channel_username, limit):
 
 			conn = sqlite3.connect(db_path)
 			cur = conn.cursor()
+			cur.execute('DELETE FROM parsed_list WHERE checked = 1')
 			for message in history.messages:
-				cur.execute('DELETE FROM parsed_list WHERE checked = 1')
-				cur.execute('INSERT INTO parsed_list(message, user_id, upload_date, checked) VALUES(?, ?, ?, ?)', (message.message, message.from_id.user_id, datetime.now(), 0))
+				if api.query(message.message) == True:
+					cur.execute('INSERT INTO parsed_list(message, user_id, upload_date, checked) VALUES(?, ?, ?, ?)', (message.message, message.from_id.user_id, datetime.now(), 0))
 			conn.commit()
 			conn.close()
 
