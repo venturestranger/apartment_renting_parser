@@ -47,8 +47,6 @@ async def get_channel_messages(channel_username, limit):
 
 
 if __name__ == "__main__":
-	print('--- Working with {sys.argv[1]}')
-
 	while True:
 		conn = sqlite3.connect(db_path)
 		cur = conn.cursor()
@@ -57,7 +55,7 @@ if __name__ == "__main__":
 		conn.close()
 		print(f'--- Links fetched:  {links}')
 
-		if sys.argv[1] == 'auto-start':
+		if len(sys.argv) > 1 and sys.argv[1] == 'auto-start':
 			for link in links:
 				try:
 					asyncio.run(get_channel_messages(link[0], limit_per_request))
@@ -72,3 +70,4 @@ if __name__ == "__main__":
 				print(f'--- Fetched from  {link[0]}')
 				print('--- Went sleeping')
 				sleep(timeout)
+		sleep(timeout)

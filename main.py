@@ -19,7 +19,7 @@ curr.execute('CREATE TABLE IF NOT EXISTS chat_list('
              )
 curr.execute('CREATE TABLE IF NOT EXISTS parsed_list ('
              'id INTEGER PRIMARY KEY,'
-             'message TEXT'
+             'message TEXT,'
              'user_id TEXT,'
              'upload_date TIMESTAMP,'
              'checked INTEGER DEFAULT 0'
@@ -49,7 +49,7 @@ def start_message(message):
                                     f' Чтобы начать добавьте чаты которые вы хотите пропарсить.', reply_markup=markup)
 
 
-owner_id = Config.owner_id
+owner_id = Config.OWNER_ID
 
 def send_parsed(message):
     conn = sqlite3.connect('database.sql')
@@ -65,7 +65,7 @@ def send_parsed(message):
         ids.append(messages_and_user_ids[i][2])
     for i, message in enumerate(messages):
         botf.send_message(owner_id, f'Пользователь - https://web.telegram.org/k/#{user_ids[i]}\nСообщение - "{message}".')
-        curr.execute('UPDATE parsed_list SET checked = ? WHERE id = ?', (1, ids[i]))
+        curr.execute('UPDATE parsed_list SET checked = ? WHERE id = ?', (0, ids[i]))
     conn.commit()
     curr.close()
     conn.close()
