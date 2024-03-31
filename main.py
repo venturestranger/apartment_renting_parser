@@ -20,9 +20,9 @@ curr.execute('CREATE TABLE IF NOT EXISTS chat_list('
 curr.execute('CREATE TABLE IF NOT EXISTS parsed_list ('
              'id INTEGER PRIMARY KEY,'
              'message TEXT'
-             'usernames TEXT,'
-             'boolean INTEGER DEFAULT 0,'
-             'upload_date INTEGER'
+             'user_id TEXT,'
+             'upload_date TIMESTAMP,'
+             'checked INTEGER DEFAULT 0'
              ')'
              )
 conn.commit()
@@ -49,8 +49,26 @@ def start_message(message):
                                     f' Чтобы начать добавьте чаты которые вы хотите пропарсить.', reply_markup=markup)
 
 
+owner_id = Config.owner_id
 
-
+def send_parsed(message):
+    conn = sqlite3.connect('database.sql')
+    curr = conn.cursor()
+    curr.execute('SELECT message, user_id, id FROM parsed_list WHERE checked = ?', (0,))
+    messages_and_user_ids = curr.fetchall()
+    messages = []
+    user_ids = []
+    ids = []
+    for i, message in enumerate(messages_and_user_ids):
+        messages.append(messages_and_user_ids[i][0])
+        user_ids.append(messages_and_user_ids[i][1])
+        ids.append(messages_and_user_ids[i][2])
+    for i, message in enumerate(messages):
+        botf.send_message(owner_id, f'Пользователь - https://web.telegram.org/k/#{user_ids[i]}\nСообщение - "{message}".')
+        curr.execute('UPDATE parsed_list SET checked = ? WHERE id = ?', (1, ids[i]))
+    conn.commit()
+    curr.close()
+    conn.close()
 
 
 
@@ -60,6 +78,7 @@ def button_reply(message):
     conn = sqlite3.connect('database.sql')
     curr = conn.cursor()
     curr.execute('SELECT links, names FROM chat_list WHERE usernames = ?', (username,))
+
     chat_list = curr.fetchall()
     if chat_list:
         chat_id = message.chat.id
@@ -160,5 +179,5 @@ def callback_handler(call):
     conn.close()
     #Creation of interface buttons to handle the input to user
 
-
-bot.polling(none_stop = True)
+if __name__=='__main__':
+    bot.polling(none_stop = True)
