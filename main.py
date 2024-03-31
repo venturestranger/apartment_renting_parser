@@ -2,6 +2,7 @@ import telebot
 from telebot import types
 import sqlite3
 from config import Config
+import threading
 
 
 # Creation of SQLite DB
@@ -179,5 +180,11 @@ def callback_handler(call):
     conn.close()
     #Creation of interface buttons to handle the input to user
 
+
 if __name__=='__main__':
-    bot.polling(none_stop = True)
+	bot1 = threading.Thread(lambda: bot.pooling(none_stop = True))
+	bot1.start()
+	# bot2 = ...
+
+	bot1.join()
+	# bot2.joni()
