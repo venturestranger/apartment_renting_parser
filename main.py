@@ -1,6 +1,7 @@
 import telebot
 from telebot import types
 import sqlite3
+from config import Config
 
 
 # Creation of SQLite DB
@@ -33,8 +34,8 @@ conn.close()
 #Creation of dictionary for transfer of variables between functions
 
 
-bot = telebot.TeleBot('7138063286:AAFgtX4Bbjz5w5ltoUmaV2P2asSPbRhg6zo')
-botf = telebot.TeleBot('6922598981:AAEr6uhM_gog7V6kmn6pvToiZ5GgAz_mmjs')
+bot = telebot.TeleBot(Config.TELEBOT_TOKEN)
+botf = telebot.TeleBot(Config.TELEBOTF_TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start_message(message):

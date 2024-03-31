@@ -1,0 +1,3 @@
+class Config: 
+	TELEBOT_TOKEN = '7138063286:AAFgtX4Bbjz5w5ltoUmaV2P2asSPbRhg6zo'
+	TELEBOTF_TOKEN = '6922598981:AAEr6uhM_gog7V6kmn6pvToiZ5GgAz_mmjs'
