@@ -6,5 +6,5 @@ class Config:
 	USERNAME = ''
 	OWNER_ID = ''
 	TIMEOUT = 300
-	LIMIT_MESSAGES = 50
+	LIMIT_MESSAGES = 200
 	DATABASE_PATH = './database.sql'

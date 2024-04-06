@@ -15,6 +15,7 @@ limit_per_request = Config.LIMIT_MESSAGES
 timeout = Config.TIMEOUT
 db_path = Config.DATABASE_PATH
 api = API()
+chat_titles = []
 api.connect(engine_path='./engine_dumps/KWC_NTVRF_0.7.pkl')
 
 
@@ -24,6 +25,7 @@ async def get_channel_messages(channel_username, limit):
 			channel = await client.get_entity(channel_username)
 
 			offset_msg = 0
+			k = channel.title
 
 			history = await client(GetHistoryRequest(
 					peer=channel,
@@ -41,7 +43,12 @@ async def get_channel_messages(channel_username, limit):
 			cur.execute('DELETE FROM parsed_list WHERE checked = 1')
 			for message in history.messages:
 				if message.message != None and api.query(message.message) == True:
-					cur.execute('INSERT INTO parsed_list(message, user_id, chat_name, chat_title, upload_date, checked) VALUES(?, ?, ?, ?, ?, ?)', (message.message, message.id, message.chat.username, message.chat.title , datetime.now(), 0))
+					print(message.message)
+					try:
+
+						cur.execute('INSERT INTO parsed_list(message, user_id, chat_name, chat_title, upload_date, checked) VALUES(?, ?, ?, ?, ?, ?)', (message.message, message.id, channel_username, channel.title , datetime.now(), 0))
+					except Exception as e:
+						print(e)
 			conn.commit()
 			conn.close()
 

@@ -82,7 +82,8 @@ def send_parsed():
         chat_name.append(messages_and_user_ids[i][3])
         chat_title.append(messages_and_user_ids[i][4])
     for i, message in enumerate(messages):
-        botf.send_message(owner_id, f'Пользователь - t.me/{chat_name[i]}/{user_ids[i]}\nСообщение - "{message[i]}".\nОткуда - {chat_title[i]}')
+
+        botf.send_message(owner_id, f'Пользователь - t.me/{chat_name[i][13:]}/{user_ids[i]}\nСообщение - "{message}".\nОткуда - {chat_title[i]}')
         curr.execute('UPDATE parsed_list SET checked = ? WHERE id = ?', (1, ids[i]))
     conn.commit()
     curr.close()
