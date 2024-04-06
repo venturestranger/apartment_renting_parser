@@ -3,6 +3,7 @@ from telebot import types
 import sqlite3
 from config import Config
 import threading
+from time import sleep
 
 
 # Creation of SQLite DB
@@ -22,6 +23,8 @@ curr.execute('CREATE TABLE IF NOT EXISTS parsed_list ('
              'id INTEGER PRIMARY KEY,'
              'message TEXT,'
              'user_id TEXT,'
+             'chat_name TEXT,'
+             'chat_title TEXT,'
              'upload_date TIMESTAMP,'
              'checked INTEGER DEFAULT 0'
              ')'
@@ -38,9 +41,19 @@ conn.close()
 bot = telebot.TeleBot(Config.TELEBOT_TOKEN)
 botf = telebot.TeleBot(Config.TELEBOTF_TOKEN)
 
+def onstart():
+    while True:
+        try:
+            send_parsed()
+        except Exception as e:
+            print(e, 'IN ons TARGET')
+        finally:
+            sleep(Config.TIMEOUT)
+
 @bot.message_handler(commands=['start'])
 def start_message(message):
     #Creation of Buttons
+    user_id = message.chat.id
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     AddButton = types.KeyboardButton('Добавить Чат')
     ShowButton = types.KeyboardButton('Показать Все Чаты')
@@ -52,21 +65,25 @@ def start_message(message):
 
 owner_id = Config.OWNER_ID
 
-def send_parsed(message):
+def send_parsed():
     conn = sqlite3.connect('database.sql')
     curr = conn.cursor()
-    curr.execute('SELECT message, user_id, id FROM parsed_list WHERE checked = ?', (0,))
+    curr.execute('SELECT message, user_id, id, chat_name, chat_title FROM parsed_list WHERE checked = ?', (0,))
     messages_and_user_ids = curr.fetchall()
     messages = []
     user_ids = []
     ids = []
+    chat_name = []
+    chat_title = []
     for i, message in enumerate(messages_and_user_ids):
         messages.append(messages_and_user_ids[i][0])
         user_ids.append(messages_and_user_ids[i][1])
         ids.append(messages_and_user_ids[i][2])
+        chat_name.append(messages_and_user_ids[i][3])
+        chat_title.append(messages_and_user_ids[i][4])
     for i, message in enumerate(messages):
-        botf.send_message(owner_id, f'Пользователь - https://web.telegram.org/k/#{user_ids[i]}\nСообщение - "{message}".')
-        curr.execute('UPDATE parsed_list SET checked = ? WHERE id = ?', (0, ids[i]))
+        botf.send_message(owner_id, f'Пользователь - t.me/{chat_name[i]}/{user_ids[i]}\nСообщение - "{message[i]}".\nОткуда - {chat_title[i]}')
+        curr.execute('UPDATE parsed_list SET checked = ? WHERE id = ?', (1, ids[i]))
     conn.commit()
     curr.close()
     conn.close()
@@ -182,9 +199,15 @@ def callback_handler(call):
 
 
 if __name__=='__main__':
-	bot1 = threading.Thread(lambda: bot.pooling(none_stop = True))
-	bot1.start()
-	# bot2 = ...
+    bot1 = threading.Thread(target=lambda: bot.polling(none_stop=True))
+    bot2 = threading.Thread(target=lambda: botf.polling(none_stop=True))
+    ons = threading.Thread(target=lambda: onstart())
 
-	bot1.join()
-	# bot2.joni()
+    try:
+        bot1.start()
+        bot2.start()
+        ons.start()
+    finally:
+        bot1.join()
+        bot2.join()
+        ons.join()

@@ -24,7 +24,6 @@ async def get_channel_messages(channel_username, limit):
 			channel = await client.get_entity(channel_username)
 
 			offset_msg = 0
-			all_messages = []
 
 			history = await client(GetHistoryRequest(
 					peer=channel,
@@ -41,8 +40,8 @@ async def get_channel_messages(channel_username, limit):
 			cur = conn.cursor()
 			cur.execute('DELETE FROM parsed_list WHERE checked = 1')
 			for message in history.messages:
-				if api.query(message.message) == True:
-					cur.execute('INSERT INTO parsed_list(message, user_id, upload_date, checked) VALUES(?, ?, ?, ?)', (message.message, message.from_id.user_id, datetime.now(), 0))
+				if message.message != None and api.query(message.message) == True:
+					cur.execute('INSERT INTO parsed_list(message, user_id, chat_name, chat_title, upload_date, checked) VALUES(?, ?, ?, ?, ?, ?)', (message.message, message.id, message.chat.username, message.chat.title , datetime.now(), 0))
 			conn.commit()
 			conn.close()
 
