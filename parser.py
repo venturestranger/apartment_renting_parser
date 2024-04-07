@@ -40,7 +40,13 @@ async def get_channel_messages(channel_username, limit):
 
 			conn = sqlite3.connect(db_path)
 			cur = conn.cursor()
-			cur.execute('DELETE FROM parsed_list WHERE checked = 1')
+
+			try:
+				cur.execute('DELETE FROM parsed_list WHERE checked = 1')
+			except:
+				pass
+				
+
 			for message in history.messages:
 				if message.message != None and api.query(message.message) == True:
 					print(message.message)
@@ -49,6 +55,7 @@ async def get_channel_messages(channel_username, limit):
 						cur.execute('INSERT INTO parsed_list(message, user_id, chat_name, chat_title, upload_date, checked) VALUES(?, ?, ?, ?, ?, ?)', (message.message, message.id, channel_username, channel.title , datetime.now(), 0))
 					except Exception as e:
 						print(e)
+
 			conn.commit()
 			conn.close()
 
