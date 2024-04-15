@@ -1,10 +1,11 @@
 # Description
 A collaborative project for recognizing implicit house renting requests
 
-1. Client - Telebot + Telethon
-2. Backend - Scikit-learn + HuggingFace Tokenizer
+1. Client - Telebot (coded by `Sayat Mushkin`)
+2. Parser - Telethon (coded by `Bogdan Yakupov`)
+3. Backend - Scikit-learn + HuggingFace Tokenizer (coded by `Bogdan Yakupov`)
 
-# API Backend (venturestranger)
+# API Backend
 
 ## Introduction
 This backend implements an API class that provides functionality for initializing, dumping, and training engines, as well as processing data for predictions.
