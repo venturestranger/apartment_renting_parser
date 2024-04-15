@@ -10,25 +10,25 @@ from time import sleep
 conn = sqlite3.connect('database.sql')
 curr = conn.cursor()
 curr.execute('CREATE TABLE IF NOT EXISTS chat_list('
-             'id INTEGER PRIMARY KEY, '
-             'links TEXT,'
-             'usernames TEXT,'
-             'names TEXT,'
-             'transfer INTEGER DEFAULT 0,'
-             'chat_id INTEGER,'
-             'k INTEGER'
-             ')'
-             )
+			 'id INTEGER PRIMARY KEY, '
+			 'links TEXT,'
+			 'usernames TEXT,'
+			 'names TEXT,'
+			 'transfer INTEGER DEFAULT 0,'
+			 'chat_id INTEGER,'
+			 'k INTEGER'
+			 ')'
+			 )
 curr.execute('CREATE TABLE IF NOT EXISTS parsed_list ('
-             'id INTEGER PRIMARY KEY,'
-             'message TEXT,'
-             'user_id TEXT,'
-             'chat_name TEXT,'
-             'chat_title TEXT,'
-             'upload_date TIMESTAMP,'
-             'checked INTEGER DEFAULT 0'
-             ')'
-             )
+			 'id INTEGER PRIMARY KEY,'
+			 'message TEXT,'
+			 'user_id TEXT,'
+			 'chat_name TEXT,'
+			 'chat_title TEXT,'
+			 'upload_date TIMESTAMP,'
+			 'checked INTEGER DEFAULT 0'
+			 ')'
+			 )
 conn.commit()
 curr.close()
 conn.close()
@@ -42,25 +42,26 @@ bot = telebot.TeleBot(Config.TELEBOT_TOKEN)
 botf = telebot.TeleBot(Config.TELEBOTF_TOKEN)
 
 def onstart():
-    while True:
-        try:
-            send_parsed()
-        except Exception as e:
-            print(e, 'IN ons TARGET')
-        finally:
-            sleep(Config.TIMEOUT)
+	while True:
+		try:
+			send_parsed()
+		except Exception as e:
+			print(e, 'IN ons TARGET')
+		finally:
+			sleep(Config.TIMEOUT)
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    #Creation of Buttons
-    user_id = message.chat.id
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    AddButton = types.KeyboardButton('Добавить Чат')
-    ShowButton = types.KeyboardButton('Показать Все Чаты')
-    markup.row(AddButton, ShowButton)
-    bot.send_message(message.chat.id,f'Привет {message.from_user.first_name}!.'
-                                     f' Этот бот способен парсить сообщения каналов которые вы укажите.'
-                                    f' Чтобы начать добавьте чаты которые вы хотите пропарсить.', reply_markup=markup)
+	#Creation of Buttons
+	user_id = message.chat.id
+	markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+	AddButton = types.KeyboardButton('Добавить Чат')
+	ShowButton = types.KeyboardButton('Показать Все Чаты')
+	markup.row(AddButton, ShowButton)
+	bot.send_message(message.chat.id, f'{message.chat.id}')
+	bot.send_message(message.chat.id,f'Привет {message.from_user.first_name}!.'
+									 f' Этот бот способен парсить сообщения каналов которые вы укажите.'
+									f' Чтобы начать добавьте чаты которые вы хотите пропарсить.', reply_markup=markup)
 
 
 owner_id = Config.OWNER_ID
@@ -133,8 +134,8 @@ def button_reply(message):
 
 @bot.message_handler(func=lambda message: message.text.lower() == 'добавить чат')
 def chat_addition_request(message):
-    bot.send_message(message.chat.id, 'Отправьте ссылку на чат')
-    bot.register_next_step_handler(message, chat_addition_link)
+	bot.send_message(message.chat.id, 'Отправьте ссылку на чат')
+	bot.register_next_step_handler(message, chat_addition_link)
 
 
 def chat_addition_link(message):
@@ -224,19 +225,19 @@ def callback_handler(call):
 		pass
 	finally:
 		conn.close()
-    #Creation of interface buttons to handle the input to user
+	#Creation of interface buttons to handle the input to user
 
 
 if __name__=='__main__':
-    bot1 = threading.Thread(target=lambda: bot.polling(none_stop=True))
-    bot2 = threading.Thread(target=lambda: botf.polling(none_stop=True))
-    ons = threading.Thread(target=lambda: onstart())
+	bot1 = threading.Thread(target=lambda: bot.polling(none_stop=True))
+	bot2 = threading.Thread(target=lambda: botf.polling(none_stop=True))
+	ons = threading.Thread(target=lambda: onstart())
 
-    try:
-        bot1.start()
-        bot2.start()
-        ons.start()
-    finally:
-        bot1.join()
-        bot2.join()
-        ons.join()
+	try:
+		bot1.start()
+		bot2.start()
+		ons.start()
+	finally:
+		bot1.join()
+		bot2.join()
+		ons.join()
