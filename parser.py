@@ -3,6 +3,7 @@ from telethon.tl.functions.messages import GetHistoryRequest
 from config import Config
 from time import sleep
 from datetime import datetime 
+from datetime import timedelta
 from backend.backend import API
 import asyncio
 import sqlite3
@@ -42,7 +43,7 @@ async def get_channel_messages(channel_username, limit):
 			cur = conn.cursor()
 
 			try:
-				cur.execute('DELETE FROM parsed_list WHERE checked = 1')
+				cur.execute('DELETE FROM parsed_list WHERE checked = 1 AND upload_date < ?', (str(datetime.now() - timedelta(days=7)),))
 			except:
 				pass
 				
@@ -51,8 +52,11 @@ async def get_channel_messages(channel_username, limit):
 				if message.message != None and api.query(message.message) == True:
 					print(message.message)
 					try:
+						cur.execute('SELECT id FROM parsed_list WHERE chat_name = ? AND user_id = ?', (channel_username, message.id))
+						data = cur.fetchall()
 
-						cur.execute('INSERT INTO parsed_list(message, user_id, chat_name, chat_title, upload_date, checked) VALUES(?, ?, ?, ?, ?, ?)', (message.message, message.id, channel_username, channel.title , datetime.now(), 0))
+						if len(data) == 0:
+							cur.execute('INSERT INTO parsed_list(message, user_id, chat_name, chat_title, upload_date, checked) VALUES(?, ?, ?, ?, ?, ?)', (message.message, message.id, channel_username, channel.title , datetime.now(), 0))
 					except Exception as e:
 						print(e)
 
