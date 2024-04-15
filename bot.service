@@ -1,0 +1,14 @@
+[Unit]
+Description=Bot
+After=network.target
+
+[Service]
+Type=simple
+User=debian
+WorkingDirectory=/home/debian/docs/apartment_renting_parser
+ExecStart=/home/debian/.python/bin/python3.11 /home/debian/docs/apartment_renting_parser/main.py
+Restart=always
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

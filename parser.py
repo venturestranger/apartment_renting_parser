@@ -78,13 +78,13 @@ if __name__ == "__main__":
 					asyncio.run(get_channel_messages(link[0], limit_per_request))
 					print(f'--- Fetched from  {link[0]}')
 					print('--- Went sleeping')
-					sleep(timeout)
 				except:
 					pass
+			sleep(timeout)
 		else:
 			for link in links:
 				asyncio.run(get_channel_messages(link[0], limit_per_request))
 				print(f'--- Fetched from  {link[0]}')
 				print('--- Went sleeping')
-				sleep(timeout)
+			sleep(timeout)
 		sleep(timeout)
