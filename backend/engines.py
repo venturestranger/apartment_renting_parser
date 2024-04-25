@@ -99,7 +99,7 @@ class NTVRF:
 			corpora = latinizeCorpora(corpora)
 			
 		self.tokenizer.train(corpora, trainer)
-		self.model = RandomForestClassifier(n_estimators=config.N_ESTIMATORS)
+		self.model = RandomForestClassifier(n_estimators=config.N_ESTIMATORS, max_depth=config.MAX_DEPTH)
 	
 	# Converts an array of tokens into a bag of tokens
 	def __count(self, data):

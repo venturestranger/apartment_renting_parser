@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pickle
 from .config import Config
 from .engines import NTVRF
@@ -77,12 +78,19 @@ class API:
 		df = pd.read_csv(dataset_path)
 
 		if 'x' in df.columns and 'y' in df.columns:
+			if portion != 1.:
+				x, x_, y, y_ = train_test_split(df['x'], df['y'], test_size=1.-portion, stratify=df['y'])
+			else:
+				x, y = df['x'], df['y']
+				x_, y_ = np.array([]), np.array([])
+
 			for engine in self.engines:
 				try:
-					x, x_, y, y_ = train_test_split(df['x'], df['y'], test_size=1.-portion, stratify=df['y'])
 					engine.fit(x, y)
 				except:
 					print(f'{engine.engine_name} not trainable')
+
+			return x, x_, y, y_
 		else:
 			raise Exception('Referenced dataset should contain "x" and "y" columns')
 	
