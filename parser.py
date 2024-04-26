@@ -18,11 +18,25 @@ db_path = Config.DATABASE_PATH
 api = API()
 chat_titles = []
 api.connect(engine_path='./engine_dumps/KWC_NTVRF_0.7.pkl')
+api2 = API()
 
 
 async def get_channel_messages(channel_username, limit):
 	async with TelegramClient(username, api_id, api_hash) as client:
 		try:
+			conn = sqlite3.connect('database.sql')
+			curr = conn.cursor()
+			curr.execute('SELECT keywords FROM keyword_list')
+			keywords_raw = curr.fetchall()
+			keywords = ''
+			keywords_s = set(keywords)
+			keywords_raw_s = set(keywords_raw)
+			if keywords_s != keywords_raw_s:
+				keywords = keywords_raw.copy()
+				#api2.connect(supposed to be)
+
+
+
 			channel = await client.get_entity(channel_username)
 
 			offset_msg = 0
