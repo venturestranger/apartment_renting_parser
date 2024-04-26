@@ -29,11 +29,20 @@ class API:
 			for engine in engine_types:
 				match engine:
 					case 'NTVRF':
-						self.engines.append(NTVRF(Config.engine_configs[engine], optional['corpora']))
+						if optional.get('NTVRF_config', None) == None:
+							self.engines.append(NTVRF(Config.engine_configs[engine], optional['corpora']))
+						else:
+							self.engines.append(NTVRF(optional['NTVRF_config'], optional['corpora']))
 					case 'NTVNB':
-						self.engines.append(NTVNB(Config.engine_configs[engine], optional['corpora']))
+						if optional.get('NTVNB_config', None) == None:
+							self.engines.append(NTVNB(Config.engine_configs[engine], optional['corpora']))
+						else:
+							self.engines.append(NTVNB(optional['NTVNB_config'], optional['corpora']))
 					case 'KWC':
-						self.engines.append(KWC(Config.engine_configs[engine]))
+						if optional.get('KWC_config', None) == None:
+							self.engines.append(KWC(Config.engine_configs[engine]))
+						else:
+							self.engines.append(KWC(optional['KWC_config']))
 					case e:
 						raise Exception(f'{e} engine cannot be initialized')
 	
