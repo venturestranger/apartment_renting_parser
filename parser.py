@@ -5,6 +5,7 @@ from time import sleep
 from datetime import datetime 
 from datetime import timedelta
 from backend.backend import API
+from backend.config import KWC_Config
 import asyncio
 import sqlite3
 import sys
@@ -18,22 +19,42 @@ db_path = Config.DATABASE_PATH
 api = API()
 chat_titles = []
 api.connect(engine_path='./engine_dumps/KWC_NTVRF_0.7.pkl')
-api2 = API()
 
+api2 = API()
+try:
+	api2.connect(engine_path='./engine_dumps/secondary.pkl')
+except:
+	config = KWC_Config()
+	config.ADDS = ['/null']
+	api2.connect(engine_type='KWC', optional={'KWC_config': config})
+	api2.dump_engine('./engine_dumps/secondary.pkl')
 
 async def get_channel_messages(channel_username, limit):
 	async with TelegramClient(username, api_id, api_hash) as client:
 		try:
+			keywords = []
+			keywords_fetched = []
+
 			conn = sqlite3.connect('database.sql')
 			curr = conn.cursor()
 			curr.execute('SELECT keywords FROM keyword_list')
 			keywords_raw = curr.fetchall()
-			keywords = ''
-			keywords_s = set(keywords)
-			keywords_raw_s = set(keywords_raw)
-			if keywords_s != keywords_raw_s:
-				keywords = keywords_raw.copy()
-				#api2.connect(supposed to be)
+			curr.close()
+			conn.close()
+			i = 0
+			for keyword in keywords_raw:
+				a = keywords_raw[i][0]
+				keywords_fetched.append(a)
+				i = i +1
+			print(keywords_fetched)
+			if set(keywords) != set(keywords_fetched):
+				keywords = keywords_fetched.copy()
+
+				print(keywords)
+				config = KWC_Config()
+				config.ADDS = keywords.copy()
+				api2.connect(engine_type='KWC', optional={'KWC_config': config})
+				api2.dump_engine('./engine_dumps/secondary.pkl')
 
 
 
@@ -60,10 +81,10 @@ async def get_channel_messages(channel_username, limit):
 				cur.execute('DELETE FROM parsed_list WHERE checked = 1 AND upload_date < ?', (str(datetime.now() - timedelta(days=7)),))
 			except:
 				pass
-				
 
 			for message in history.messages:
-				if message.message != None and api.query(message.message) == True:
+				print(message.message) # Here api2 is similarity model and api is main model
+				if (message.message != None and api.query(message.message) == True) or (message.message != None and api2.query(message.message) == True):
 					print(message.message)
 					try:
 						cur.execute('SELECT id FROM parsed_list WHERE chat_name = ? AND user_id = ?', (channel_username, message.id))

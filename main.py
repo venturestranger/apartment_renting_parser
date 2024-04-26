@@ -262,9 +262,8 @@ def callback_handler(call):
 		bot.send_message(call.message.chat.id,
 						 'Чат не был сохранен. Чтобы начать процесс заново нажмите кнопку "Добавить Чат".')
 	elif call.data == 'accept':
-		bot.send_message(call.message.chat.id, '111Чат был успешно добавлен!')
-		curr.execute('UPDATE chat_list SET transfer = ? WHERE transfer = ?', (0, 1,))
 		bot.send_message(call.message.chat.id, 'Чат был успешно добавлен!')
+		curr.execute('UPDATE chat_list SET transfer = ? WHERE transfer = ?', (0, 1,))
 	elif action == 'deleteAll':
 		chat_id = callback_data[1]
 		counter = callback_data[2]
