@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pickle
 from .config import Config
 from .engines import NTVRF
@@ -28,11 +29,20 @@ class API:
 			for engine in engine_types:
 				match engine:
 					case 'NTVRF':
-						self.engines.append(NTVRF(Config.engine_configs[engine], optional['corpora']))
+						if optional.get('NTVRF_config', None) == None:
+							self.engines.append(NTVRF(Config.engine_configs[engine], optional['corpora']))
+						else:
+							self.engines.append(NTVRF(optional['NTVRF_config'], optional['corpora']))
 					case 'NTVNB':
-						self.engines.append(NTVNB(Config.engine_configs[engine], optional['corpora']))
+						if optional.get('NTVNB_config', None) == None:
+							self.engines.append(NTVNB(Config.engine_configs[engine], optional['corpora']))
+						else:
+							self.engines.append(NTVNB(optional['NTVNB_config'], optional['corpora']))
 					case 'KWC':
-						self.engines.append(KWC(Config.engine_configs[engine]))
+						if optional.get('KWC_config', None) == None:
+							self.engines.append(KWC(Config.engine_configs[engine]))
+						else:
+							self.engines.append(KWC(optional['KWC_config']))
 					case e:
 						raise Exception(f'{e} engine cannot be initialized')
 	
@@ -77,12 +87,19 @@ class API:
 		df = pd.read_csv(dataset_path)
 
 		if 'x' in df.columns and 'y' in df.columns:
+			if portion != 1.:
+				x, x_, y, y_ = train_test_split(df['x'], df['y'], test_size=1.-portion, stratify=df['y'])
+			else:
+				x, y = df['x'], df['y']
+				x_, y_ = np.array([]), np.array([])
+
 			for engine in self.engines:
 				try:
-					x, x_, y, y_ = train_test_split(df['x'], df['y'], test_size=1.-portion, stratify=df['y'])
 					engine.fit(x, y)
 				except:
 					print(f'{engine.engine_name} not trainable')
+
+			return x, x_, y, y_
 		else:
 			raise Exception('Referenced dataset should contain "x" and "y" columns')
 	
