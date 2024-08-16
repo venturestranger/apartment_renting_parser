@@ -7,7 +7,7 @@ from time import sleep
 
 
 
-# Creation of SQLite DB
+# Creation of SQLite db
 conn = sqlite3.connect('database.sql')
 curr = conn.cursor()
 curr.execute('CREATE TABLE IF NOT EXISTS chat_list('
