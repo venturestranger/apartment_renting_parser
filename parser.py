@@ -6,6 +6,7 @@ from datetime import datetime
 from datetime import timedelta
 from backend.backend import API
 from backend.config import KWC_Config
+from hash import hash_generator
 import asyncio
 import sqlite3
 import sys
@@ -29,9 +30,11 @@ except:
 	api2.connect(engine_type='KWC', optional={'KWC_config': config})
 	api2.dump_engine('./engine_dumps/secondary.pkl')
 
-async def get_channel_messages(channel_username, limit):
+async def get_channel_messages(name, limit):
+	print("test 0")
 	async with TelegramClient(username, api_id, api_hash) as client:
 		try:
+			print("test 1")
 			keywords = []
 			keywords_fetched = []
 
@@ -57,9 +60,7 @@ async def get_channel_messages(channel_username, limit):
 				api2.dump_engine('./engine_dumps/secondary.pkl')
 
 
-
-			channel = await client.get_entity(channel_username)
-
+			channel = await client.get_entity(name)
 			offset_msg = 0
 			k = channel.title
 
@@ -86,15 +87,28 @@ async def get_channel_messages(channel_username, limit):
 				print(message.message) # Here api2 is similarity model and api is main model
 				if (message.message != None and api.query(message.message) == True) or (message.message != None and api2.query(message.message) == True):
 					print(message.message)
+					
 					try:
-						cur.execute('SELECT id FROM parsed_list WHERE chat_name = ? AND user_id = ?', (channel_username, message.id))
-						data = cur.fetchall()
+						unique = True
+						hash_value = hash_generator(message.message)
+						print("The hash value from generator")
+						print(hash_value)
+						cur.execute('SELECT hash_values FROM parsed_list WHERE chat_name = ?', (name,))
 
-						if len(data) == 0:
-							cur.execute('INSERT INTO parsed_list(message, user_id, chat_name, chat_title, upload_date, checked) VALUES(?, ?, ?, ?, ?, ?)', (message.message, message.id, channel_username, channel.title , datetime.now(), 0))
+						hash_check = cur.fetchall()
+						for hash in hash_check:
+							if hash[0] == hash_value:
+								unique = False
+								break
+							
+						if unique:
+							try:
+
+								cur.execute('INSERT INTO parsed_list(message, user_id, chat_name, chat_title, upload_date, checked, hash_values) VALUES(?, ?, ?, ?, ?, ?, ?)', (message.message, message.id, name, channel.title , datetime.now(), 0, hash_value))
+							except Exception as e:
+								print(e)
 					except Exception as e:
 						print(e)
-
 			conn.commit()
 			conn.close()
 
@@ -114,7 +128,7 @@ if __name__ == "__main__":
 		if len(sys.argv) > 1 and sys.argv[1] == 'auto-start':
 			for link in links:
 				try:
-					asyncio.run(get_channel_messages(link[0], limit_per_request))
+					asyncio.run((link[0], limit_per_request))
 					print(f'--- Fetched from  {link[0]}')
 					print('--- Went sleeping')
 				except:

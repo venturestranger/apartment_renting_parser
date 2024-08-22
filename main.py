@@ -36,7 +36,8 @@ curr.execute('CREATE TABLE IF NOT EXISTS parsed_list ('
 			 'chat_name TEXT,'
 			 'chat_title TEXT,'
 			 'upload_date TIMESTAMP,'
-			 'checked INTEGER DEFAULT 0'
+			 'checked INTEGER DEFAULT 0,'
+			 'hash_values INTEGER'
 			 ')'
 			 )
 conn.commit()
