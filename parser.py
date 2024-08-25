@@ -50,7 +50,7 @@ async def get_channel_messages(name, limit):
 				keywords_fetched.append(a)
 				i = i +1
 			print(keywords_fetched)
-			if set(keywords) != set(keywords_fetched):
+            if set(keywords) != set(keywords_fetched):
 				keywords = keywords_fetched.copy()
 
 				print(keywords)
